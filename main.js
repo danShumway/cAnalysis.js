@@ -239,14 +239,36 @@ var costFunctions = {
     return [0, 0];
   },
   
+  //Stealth is honestly pretty tricky to value,
+  //since it's almost always a combo ability.
+  //The easy way to look at it is to look at cards with stealth and see how they're rated.
+  //I did a bit of that, and also a bit of analysis to figure out how stealth works.
+  //At first glance, (Uncomboed) Stealth is basically an alternate version of charge.
+  // - you don't have to immediately use it as soon as you sink mana in though, and this makes it sometimes a more efficient play.
+  //The disadvantage of stealth is security.  You aren't guaranteed an attack (AOE, taunters, etc... that your opponent can play in response)
+  //This makes stealth, in some ways, a little bit riskier than charge.
+  //Think of Stealth as an investment version of charge (again, we're only talking about uncomboed here).  I'm putting mana down at a slight risk
+  //in order to have access to that value for free whenever I actually need it.
+  //In those terms, it's clear why I use the charge formula but divide by the card cost rather than 3 (the pseudo average of other cards).
+  "stealth": function(card){
+    if((/Stealth/).test(card.text)){
+      if(!(/([M|m]inion[^\.;,]*)Stealth/).test(card.text)) {
+         return [1, card.attack/(card.cost+1)];
+       }
+    }
+    return [0, 0];
+  },
+  
   //I'll be honest, I just kind of guessed a bit at this number.
   //Overload isn't a straight drawback though, it's a little bit better than it looks.
+  //I'd love to say that the .7 I got here has a logical reason, but that number is purely derived from making the cards fit into their cost curves.
+  //I don't know why that exact number is used, but that's the most correct one I've found.
   "overload": function(card){
     if(card.type === "Minion"){
       if(card.text != undefined) {
         var cost = card.text.match(/Overload[^0-9]*([0-9]+)/);
         if(cost != undefined) {
-          return [cost[1], -cost[1]*.6]; //Overload is better than having it cost (x) more.
+          return [cost[1], -cost[1]*.7]; //Overload is better than having it cost (x) more.
         }
       }
     }  
