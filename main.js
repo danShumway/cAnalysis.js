@@ -78,14 +78,19 @@ function fill(){
         }
     }
   
-    //Fill rows.
+    //Put in labels for everything.
+    doc.getRange(2, 1).setValue("Name");
+    doc.getRange(2, 2).setValue("Text");
+    doc.getRange(2, 3).setValue("Using");
     var column = 4;
     for (var f in costFunctions) {
         func++;
         doc.getRange(2, column).setValue(f);
         column+= 2;
      }
+     doc.getRange(2, column).setValue("Final Value");
 
+    //Return the dimensions of our data.
     return [row, 4 + func*2];
 };
 
