@@ -1,3 +1,7 @@
+//Mention Beast/Murlock and why it's not used.
+//Add healing/damage/card draw/summoning/silence - as much as you can.
+//Do writeup of all of the things you are using.
+
 var cards;
 var doc;
 
@@ -21,6 +25,16 @@ function addCards(){
 //Tries its best to filter out cards with unique abilities.
 function use(card){
     return !(/([aA][lL][lL]|\b[oO]ther\b|[wW]henever|[Pp]ut|[fF]or|\b[Aa]t\b|[Rr]andom|[pP]layer|[mM]inions\b)/).test(card.text);
+}
+
+function getValue(card) {
+  var value = 0;
+  for(var f in costFunctions){
+    var fill = costFunctions[f](card);
+    value += fill[1]; //Increase the card's overall value.
+  }
+  
+  return value;
 }
 
 function fill(){
@@ -54,8 +68,8 @@ function fill(){
                     value += fill[1]; //Increase the card's overall value.
 
                     //Fill in.
-                    column++;
-                    doc.getRange(row, column).setValue(fill[0]);
+                    //column++;
+                    //doc.getRange(row, column).setValue(fill[0]);
                     column++;
                     doc.getRange(row, column).setValue(fill[1]);
                 }
@@ -86,13 +100,32 @@ function fill(){
     for (var f in costFunctions) {
         func++;
         doc.getRange(2, column).setValue(f);
-        column+= 2;
+        column += 1;//column+= 2;
      }
      doc.getRange(2, column).setValue("Final Value");
 
     //Return the dimensions of our data.
-    return [row, 4 + func*2];
+    return [row, 4 + func];
 };
+
+function getValue(card){
+  if(card.type === "Minion") {
+    
+    //Fill in all of the special cases.
+    for(var f in adjustments) {
+      adjustments[f](card);
+    }
+    
+    var value = 0;
+    for(var f in costFunctions){
+      var fill = costFunctions[f](card);
+      value += fill[1]; //Increase the card's overall value.
+    }
+    
+    return value;
+  }
+  return 0;
+}
 
 function order(start, end, columns) {
     doc.getRange(1, 1).setValue(columns);
@@ -134,7 +167,9 @@ var costFunctions = {
     //It explains why some low cost cards are actually pretty bad, like Wisp.
     "cards": function(card){
         if(card.type === "Minion"){
+          if(card.cards == undefined || card.cards == 1) {
             return [1, -3/(card.health + card.attack)];
+          }
         }
 
         return [0, 0];
@@ -274,6 +309,57 @@ var costFunctions = {
     }  
     return [0, 0];
   },
+  
+  //This is used for by-hand tweaks.  I only do it for cards that have weird abilities that need hand-tweaking but that I'm not willing to throw out entirely.
+  //For example, Leroy Jenkins summons stuff for your opponent, Injured Blademaster does damage to himself, etc... etc...
+  //All of this stuff is clearly marked, so you can easily tell if a card is what it is because of the formulas, or because I hand-added or subtracted some value.
+  "bonus": function(card){
+    if(card.bonus !== undefined) {
+     return[1, card.bonus]; 
+    }
+    return [0, 0];
+  },
+  
+  "summon": function(card){
+    var minion_value = 0;
+    if(card.text !== undefined) {
+      if((/Summon/).test(card.text)){
+        //Battlecry or deathrattle?
+        modifier = card.text.split("Deathrattle");
+        //I know that I have a deathrattle, which is better.
+        if(modifier.length > 1) {
+          death_bonus = 2;
+          modifier = modifier[1];
+        } else {
+          modifier = modifier[0];
+        }
+        
+        //Extract the data
+        var summonStats = modifier.match(/Summon (a|two) ([0-9]+)\/([0-9]+)*/);
+        if(summonStats) {
+          summonStats.concat(modifier.match(/(Charge|Taunt)/) || []);
+          //Build the card
+          if(summonStats[1] == "two") { summonStats[1] = 2; } else { summonStats[1] = 1; }
+          var virtual_card = {
+            "type": "Minion",
+            "cost": 0,
+            "cards": 1, /*Not sure if this is true*/
+            "attack": Number(summonStats[2]),
+            "health": Number(summonStats[3]),
+            "text": summonStats[2]
+          }
+          
+          for(var i = 0; i < summonStats[1]; i++){
+            minion_value += getValue(virtual_card);
+          }
+          
+          
+          return [1, minion_value];
+        }
+      }
+    }
+    return [0, 0];
+  }
 }
 
 var adjustments = {
@@ -298,7 +384,12 @@ var adjustments = {
             //--------------------------------------
             card.use = true;
         }
-    }
+    },
+  
+  "bonus": function(card) {
+      //if(card.name === "
+    
+  }
 }
 
 
