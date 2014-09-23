@@ -120,7 +120,7 @@ function getValue(card){
     var value = 0;
     for(var f in costFunctions){
       var fill = costFunctions[f](card);
-      card[i][f + "_value"] = fill[1];
+      card[f + "_value"] = fill[1];
       value += fill[1]; //Increase the card's overall value.
     }
     
@@ -321,6 +321,17 @@ var costFunctions = {
     }
     return [0, 0];
   },
+
+  "draw": function(card){
+    if(card.text !== undefined){
+      card_draw = card.text.match(/Draw (a|[0-9]+) card/);
+      if(card_draw != undefined){
+        if(card_draw[1] == 'a'){ card_draw[1] = 1 };
+        return [card_draw[1], card_draw[1]*2];
+      }
+    }
+    return [0, 0];
+  },
   
   "summon": function(card){
     var minion_value = 0;
@@ -398,7 +409,7 @@ var adjustments = {
             card.name === "The Black Knight" ||
             card.name === "Kidnapper" ||
             card.name === "Lightspawn" ||
-            car.name === "Faceless Manipulator") {
+            card.name === "Faceless Manipulator") {
             //-------------------------------------
             card.use = false;
         }
