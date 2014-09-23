@@ -322,6 +322,7 @@ var costFunctions = {
     return [0, 0];
   },
 
+  //Pretty straight formula.  A card is worth about 2 mana.
   "draw": function(card){
     if(card.text !== undefined){
       card_draw = card.text.match(/Draw (a|[0-9]+) card/);
@@ -333,6 +334,8 @@ var costFunctions = {
     return [0, 0];
   },
   
+  //We simulate the minion, get its value, and then add it to this one.
+  //By this algorithm, summon cards are, like, really good.
   "summon": function(card){
     var minion_value = 0;
     if(card.text !== undefined) {
@@ -368,6 +371,36 @@ var costFunctions = {
           
           
           return [1, minion_value];
+        }
+      }
+    }
+    return [0, 0];
+  },
+
+  //We either give a straight buff, or if it's an ability, we simulate an "average" card with that ability, see what the value is, then return it.
+  "buff": function(card){
+    var minion_value = 0;
+    if(card.text !== undefined) {
+      if((/[gG]ive/).test(card.text)){
+        
+        //Extract the data
+        var summonStats = card.text.match(/[gG]ive a friendly minion \+([0-9]+)\/\+([0-9]+)*/);
+        if(!summonStats || summonStats.length < 3) {
+          summonStats = card.text.match(/(Charge|Taunt|Divine Shield|Windfury|Stealth)/) || [];
+          //Build the card (Random minion with average stats)
+          var virtual_card = {
+            "type": "Minion",
+            "cost": 3,
+            "cards": 1,
+            "attack": 3.3,
+            "health": 3.3,
+            "text": "<b>" + summonStats[1] + "</b>"
+          } //What would be the value?
+          
+          
+          return [1, getValue(virtual_card)];
+        } else {
+            return [1, summonStats[1]*.7 + summonStats[2]*.7]
         }
       }
     }
@@ -409,13 +442,27 @@ var adjustments = {
             card.name === "The Black Knight" ||
             card.name === "Kidnapper" ||
             card.name === "Lightspawn" ||
-            card.name === "Faceless Manipulator") {
+            card.name === "Faceless Manipulator" ||
+            card.name === "Arcane Golem" || 
+            card.name === "Gelbin Mekkatorque" ||
+            card.name === "Faerie Dragon" ||
+            card.name === "Sorcerer's Aprrentice" ||
+            card.name === "Youthful Brewmaster" ||
+            card.name === "Aldor Peacekeeper" ||
+            card.name === "Crazed Alchemist" ||
+            card.name === "Harrison Jones" ||
+            card.name === "Cruel Taskmaster" ||
+            card.name === "Frost Elemental" ||
+            card.name === "Abusive Sergeant" ||
+            card.name === "Malygos" ||
+            card.name === "Cabal Shadow Priest" //||
+            /*card.name ===*/) {
             //-------------------------------------
             card.use = false;
         }
 
         //And some of the cards that we want in.
-        if(card.name === "Leroy Jenkins") {
+        if(/*card.name === "Leroy Jenkins"*/false) {
             //--------------------------------------
             card.use = true;
         }
