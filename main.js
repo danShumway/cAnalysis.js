@@ -65,6 +65,7 @@ function fill(){
                 var value = 0; var column = 3;
                 for(var f in costFunctions){
                     var fill = costFunctions[f](cards[category][i]);
+                    cards[category][i][f + "_value"] = fill[1];
                     value += fill[1]; //Increase the card's overall value.
 
                     //Fill in.
@@ -119,6 +120,7 @@ function getValue(card){
     var value = 0;
     for(var f in costFunctions){
       var fill = costFunctions[f](card);
+      card[i][f + "_value"] = fill[1];
       value += fill[1]; //Increase the card's overall value.
     }
     
@@ -374,7 +376,29 @@ var adjustments = {
             card.name === "Khin Tor Mage" ||
             card.name === "Phrophet Velen" ||
             card.name === "Acidic Swamp Ooze" ||
-            card.name === "Lord Jaraxxus") {
+            card.name === "Lord Jaraxxus" ||
+            card.name === "Ancient Watcher" ||
+            card.name === "King Mukla" ||
+            card.name === "Kirin Tor Mage" ||
+            card.name === "Southsea Deckhand" ||
+            card.name === "Prophet Velen" ||
+            card.name === "Bloodsail Raider" ||
+            card.name === "Auchenai Soulpriest" ||
+            card.name === "Pint-Sized Summoner" ||
+            card.name === "Bloodsail Corsair" ||
+            card.name === "Hungry Crab" ||
+            card.name === "Big Game Hunter" ||
+            card.name === "Dread Corsair" ||
+            card.name === "Captain Greenskin" ||
+            card.name === "Alexstrasza" ||
+            card.name === "Onyxia" ||
+            card.name === "Arathi Weaponsmith" ||
+            card.name === "Tundra Rhino" ||
+            /*card.name === "Patient Assassin" ||*/
+            card.name === "The Black Knight" ||
+            card.name === "Kidnapper" ||
+            card.name === "Lightspawn" ||
+            car.name === "Faceless Manipulator") {
             //-------------------------------------
             card.use = false;
         }
