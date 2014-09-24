@@ -336,6 +336,9 @@ var costFunctions = {
   
   //We simulate the minion, get its value, and then add it to this one.
   //By this algorithm, summon cards are, like, really good.
+  //Deathrattle can be a blessing or a curse - at low health, it's really good.
+  //At high health, not so much.
+  //---SIMULATE NEW CARDS VALUE * 2.8/card.health
   "summon": function(card){
     var minion_value = 0;
     if(card.text !== undefined) {
@@ -344,7 +347,7 @@ var costFunctions = {
         modifier = card.text.split("Deathrattle");
         //I know that I have a deathrattle, which is better.
         if(modifier.length > 1) {
-          death_bonus = 2;
+          death_bonus = 1/card.health+1;
           modifier = modifier[1];
         } else {
           modifier = modifier[0];
@@ -359,7 +362,7 @@ var costFunctions = {
           var virtual_card = {
             "type": "Minion",
             "cost": 0,
-            "cards": 1, /*Not sure if this is true*/
+            "cards": 0, /*Not sure if this is true*/
             "attack": Number(summonStats[2]),
             "health": Number(summonStats[3]),
             "text": summonStats[2]
@@ -378,30 +381,27 @@ var costFunctions = {
   },
 
   //We either give a straight buff, or if it's an ability, we simulate an "average" card with that ability, see what the value is, then return it.
+  //+x/+y = x+y*.7, or SIMULATE CARD VALUE (3.3/3.3 3 cost) with new ability.
   "buff": function(card){
     var minion_value = 0;
     if(card.text !== undefined) {
       if((/[gG]ive/).test(card.text)){
         
         //Extract the data
-        var summonStats = card.text.match(/[gG]ive a friendly minion \+([0-9]+)\/\+([0-9]+)*/);
-        if(!summonStats || summonStats.length < 3) {
-          summonStats = card.text.match(/(Charge|Taunt|Divine Shield|Windfury|Stealth|\+[0-9] Health)/) || [];
-          //Build the card (Random minion with average stats)
-          var virtual_card = {
-            "type": "Minion",
-            "cost": 3,
-            "cards": 1,
-            "attack": 3.3,
-            "health": 3.3,
-            "text": "<b>" + summonStats[1] + "</b>"
-          } //What would be the value?
-          
-          
-          return [1, getValue(virtual_card)];
-        } else {
-            return [1, summonStats[1]*.7 + summonStats[2]*.7]
-        }
+        var summonStats = card.text.match(/[gG]ive a friendly (?:[mM]inion|Beast) \+([0-9]+)\/\+([0-9]+)*/) || [1, 0, 0];
+        var some_bonus = card.text.match(/(Charge|Taunt|Divine Shield|Windfury|Stealth|\+[0-9] Health)/) || [];
+        if((/Health/).test(some_bonus[1])){ summonStats[2] += Number(some_bonus[1].match(/([0-9])/)[1]); }
+        //Build the card (Random minion with average stats)
+        var virtual_card = {
+          "type": "Minion",
+          "cost": 3,
+          "cards": 1,
+          "attack": 3.4 + Number(summonStats[1]*1.2),
+          "health": 3.3 + Number(summonStats[2]*1.2),
+          "text": "<b>" + (some_bonus[1] || "") + "</b>"
+        } //What would be the value?
+        
+        return [1, getValue(virtual_card)];
       }
     }
     return [0, 0];
