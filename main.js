@@ -24,7 +24,7 @@ function addCards(){
 //Whether or not a card should be included in the distribution.
 //Tries its best to filter out cards with unique abilities.
 function use(card){
-    return !(/([aA][lL][lL]|\b[oO]ther\b|[wW]henever|[Pp]ut|[fF]or|\b[Aa]t\b|[Rr]andom|[pP]layer|[mM]inions\b)/).test(card.text);
+    return !(/([aA][lL][lL]|\b[oO]ther\b|[wW]henever|[eE]nrage|[Pp]ut|[fF]or|\b[Aa]t\b|[Rr]andom|[pP]layer|[mM]inions\b)/).test(card.text);
 }
 
 function getValue(card) {
@@ -341,13 +341,14 @@ var costFunctions = {
   //---SIMULATE NEW CARDS VALUE * 2.8/card.health
   "summon": function(card){
     var minion_value = 0;
+    var death_bonus = 1;
     if(card.text !== undefined) {
       if((/Summon/).test(card.text)){
         //Battlecry or deathrattle?
-        modifier = card.text.split("Deathrattle");
+        var modifier = card.text.split("Deathrattle");
         //I know that I have a deathrattle, which is better.
         if(modifier.length > 1) {
-          death_bonus = 1/card.health+1;
+          death_bonus = 3/card.health;
           modifier = modifier[1];
         } else {
           modifier = modifier[0];
@@ -373,7 +374,7 @@ var costFunctions = {
           }
           
           
-          return [1, minion_value];
+          return [1, minion_value*death_bonus];
         }
       }
     }
@@ -407,27 +408,27 @@ var costFunctions = {
     return [0, 0];
   },
 
-  //Damage is pretty straightforward.  It's 1 value per damage.
+  //Damage is pretty straightforward.  It's .65 value per damage, unless it's to a hero in which case it's -.3.
   "damage": function(card){
     if((/Deal/).test(card.text)){
         var summonStats = card.text.match(/([0-9]+) [dD]amage/);
         if((/to your hero/).test(card.text)) {
-           return [1, -Number(summonStats[1])*.4];
+           return [1, -Number(summonStats[1])*.3];
         }
-        return [1, Number(summonStats[1]*.7)];
+        return [1, Number(summonStats[1]*.65)];
       //return[1, 1];
     }
     return [0, 0];
   },
   
-  //Damage is pretty straightforward.  It's 1 value per damage.
+  //Health is also pretty straightforward.  It's .6 value per damage, unless it's to a hero in which case it's .3
   "restore": function(card){
     if((/Restore/).test(card.text)){
         var summonStats = card.text.match(/([0-9]+) [hH]ealth/);
         if((/to your hero/).test(card.text)) {
-           return [1, Number(summonStats[1])*.4];
+           return [1, Number(summonStats[1])*.3];
         }
-        return [1, Number(summonStats[1])*.7];
+        return [1, Number(summonStats[1])*.6];
       //return[1, 1];
     }
     return [0, 0];
@@ -464,7 +465,7 @@ var adjustments = {
             card.name === "Onyxia" ||
             card.name === "Arathi Weaponsmith" ||
             card.name === "Tundra Rhino" ||
-            /*card.name === "Patient Assassin" ||*/
+            card.name === "Patient Assassin" ||
             card.name === "The Black Knight" ||
             card.name === "Kidnapper" ||
             card.name === "Lightspawn" ||
@@ -481,8 +482,15 @@ var adjustments = {
             card.name === "Frost Elemental" ||
             card.name === "Abusive Sergeant" ||
             card.name === "Malygos" ||
-            card.name === "Cabal Shadow Priest" //||
-            /*card.name ===*/) {
+            card.name === "Cabal Shadow Priest" ||
+            card.name === "Ancient of Lore" ||
+            card.name === "Houndmaster" ||
+            card.name === "Argent Commander" ||
+            card.name === "Spellbreaker" ||
+            card.name === "Ancient of War" ||
+            card.name === "Ironbeak Owl" ||
+            card.name === "Sorcerer's Apprentice" ||
+            card.name === "Injured Blademaster") {
             //-------------------------------------
             card.use = false;
         }
