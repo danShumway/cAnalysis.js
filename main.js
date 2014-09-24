@@ -386,7 +386,7 @@ var costFunctions = {
         //Extract the data
         var summonStats = card.text.match(/[gG]ive a friendly minion \+([0-9]+)\/\+([0-9]+)*/);
         if(!summonStats || summonStats.length < 3) {
-          summonStats = card.text.match(/(Charge|Taunt|Divine Shield|Windfury|Stealth)/) || [];
+          summonStats = card.text.match(/(Charge|Taunt|Divine Shield|Windfury|Stealth|\+[0-9] Health)/) || [];
           //Build the card (Random minion with average stats)
           var virtual_card = {
             "type": "Minion",
@@ -403,6 +403,32 @@ var costFunctions = {
             return [1, summonStats[1]*.7 + summonStats[2]*.7]
         }
       }
+    }
+    return [0, 0];
+  },
+
+  //Damage is pretty straightforward.  It's 1 value per damage.
+  "damage": function(card){
+    if((/Deal/).test(card.text)){
+        var summonStats = card.text.match(/([0-9]+) [dD]amage/);
+        if((/to your hero/).test(card.text)) {
+           return [1, -Number(summonStats[1])*.4];
+        }
+        return [1, Number(summonStats[1]*.7)];
+      //return[1, 1];
+    }
+    return [0, 0];
+  },
+  
+  //Damage is pretty straightforward.  It's 1 value per damage.
+  "restore": function(card){
+    if((/Restore/).test(card.text)){
+        var summonStats = card.text.match(/([0-9]+) [hH]ealth/);
+        if((/to your hero/).test(card.text)) {
+           return [1, Number(summonStats[1])*.4];
+        }
+        return [1, Number(summonStats[1])*.7];
+      //return[1, 1];
     }
     return [0, 0];
   }
@@ -466,6 +492,9 @@ var adjustments = {
             //--------------------------------------
             card.use = true;
         }
+      
+        //Fix the "Or" cards. Probably overdoing it.
+      
     },
   
   "bonus": function(card) {
