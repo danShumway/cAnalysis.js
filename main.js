@@ -8,7 +8,7 @@ var doc;
 
 //----------------
 function createDocument(){
-  doc = SpreadsheetApp.openById("1VAU-ZMY1w3ps6pkVWxBXVQPRFRsv3MqjN7Bs7DQUXLM").getActiveSheet();
+  doc = SpreadsheetApp.openById("your-id-here").getActiveSheet();
   addCards();
 
 };
