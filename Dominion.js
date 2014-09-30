@@ -24,7 +24,7 @@ function addCards(){
 //Whether or not a card should be included in the distribution.
 //Tries its best to filter out cards with unique abilities.
 function use(card){
-    return (card.text === " ");
+    return (card.set === 0);
     //return !(/([aA][lL][lL]|\b[oO]ther\b|[wW]henever|[eE]nrage|[Pp]ut|[fF]or|\b[Aa]t\b|[Rr]andom|[pP]layer|[mM]inions\b)/).test(card.text);
 }
 
@@ -129,33 +129,42 @@ function order(start, end, columns) {
 var costFunctions = {
   "Cost": function(card){
    return [card.cost, -card.cost]; 
-  }
+  },
+
+  "actions": function(card){
+    return[card.actions, card.actions];
+  },
+
+  "cards": function(card){
+    return[card.cards, card.cards];
+  },
+
+  "buys": function(card){
+    return[card.buys, card.buys];
+  },
+
+  "treasure": function(card){
+    return[card.treasure, card.treasure];
+  },
+
+  "buys": function(card){
+    return[card.buys, card.buys];
+  },
   
   
 }
 
 var adjustments = {
 
-    //A custom function to fix some oversights in the regex.
-    "abandon": function(card) {
-        if(card.name === "Felguard") {
-            //-------------------------------------
-            card.use = false;
-        }
+  "rephrase": function(card) {
+    if(card.name === "Militia") {
+      card.cards = 2; //Discards for other people are +cards for you.
+    }
 
-        //And some of the cards that we want in.
-        if(/*card.name === "Leroy Jenkins"*/false) {
-            //--------------------------------------
-            card.use = true;
-        }
-      
-        //Fix the "Or" cards. Probably overdoing it.
-      
-    },
-  
-  "bonus": function(card) {
-      //if(card.name === "
-    
+    if(card.name == "Workshop") {
+      card.buys = 1;
+      card.treasure = 4;
+    }
   }
 }
 
